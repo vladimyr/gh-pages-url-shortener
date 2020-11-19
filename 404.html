@@ -3,6 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <title>Redirecting...</title>
+    <!-- Configuration goes here -->
+    <script id="config" type="application/json">
+      {
+        "githubRepo": "nelsontky/gh-pages-url-shortener-db",
+        "publicPath": "/",
+        "schemeAllowlist": [
+          "https:",
+          "http:",
+          "ftp:"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="errorMessage" style="display: none">
@@ -15,24 +27,14 @@
     </div>
     <script>
       (function () {
-        /**
-         * Configuration goes here
-         */
-        var GITHUB_REPO = 'nelsontky/gh-pages-url-shortener-db';
-        var PUBLIC_PATH = '/';
-        var SCHEME_ALLOWLIST = [
-          'https:',
-          'http:',
-          'ftp:'
-        ];
+        var $config = document.getElementById('config');
+        var $errorMessage = document.getElementById('errorMessage');
 
-        /**
-         * DO NOT TOUCH ANYTHING BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU ARE DOING
-         */
+        var config = JSON.parse($config.textContent);
         var GITHUB_API_URL = 'https://api.github.com';
 
         (function redirect() {
-          var publicPath = normalize(PUBLIC_PATH);
+          var publicPath = normalize(config.publicPath);
           var pathname = location.pathname.replace(publicPath, '');
 
           Promise.resolve(pathname.match(/^\/?([^/]+)/))
@@ -54,7 +56,7 @@
               var title = 'Invalid URL!';
               history.replaceState(null, title, publicPath);
               document.title = title;
-              document.errorMessage.style.display = 'initial';
+              $errorMessage.style.display = 'initial';
               console.error(error);
             });
         }());
@@ -63,11 +65,11 @@
           if (url.hostname === location.hostname) {
             return false;
           }
-          return SCHEME_ALLOWLIST.indexOf(url) !== -1;
+          return config.schemeAllowlist.indexOf(url.protocol) !== -1;
         }
 
         function fetchIssue(issue) {
-          var pathname = ['repos', GITHUB_REPO, 'issues', issue].join('/');
+          var pathname = ['repos', config.githubRepo, 'issues', issue].join('/');
           var issueUrl = new URL(pathname, GITHUB_API_URL);
 
           return fetch(issueUrl).then(function (response) {
