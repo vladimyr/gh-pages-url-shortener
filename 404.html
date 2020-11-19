@@ -38,7 +38,7 @@
           Promise.resolve(pathname.match(/^\/?([^/]+)/))
             .then(function (match) {
               var issue = match && parseInt(match[1], 10);
-              if (!isNaN(issue)) {
+              if (issue) {
                 return fetchIssue(issue);
               }
               throw new Error('Invalid issue number');
