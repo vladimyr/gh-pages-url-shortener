@@ -5,19 +5,19 @@
     <title>Redirecting...</title>
   </head>
   <body>
+    <div id="errorMessage" style="display: none">
+      <p>Short URL is invalid! (Or you have been spamming the site too much)</p>
+      <p>
+        <a href="https://github.com/nelsontky/gh-pages-url-shortener">
+          Learn more about this URL shortener'
+        </a>
+      </p>
+    </div>
     <script>
       (function () {
         /**
          * Configuration goes here
          */
-        var ERROR_HTML = [
-          '<p>Short URL is invalid! (Or you have been spamming the site too much)</p>',
-          '<p>',
-          '  <a href="https://github.com/nelsontky/gh-pages-url-shortener">',
-          '    Learn more about this URL shortener',
-          '  </a>',
-          '</p>'
-        ].join('\n');
         var GITHUB_REPO = 'nelsontky/gh-pages-url-shortener-db';
         var PUBLIC_PATH = '/';
 
@@ -49,7 +49,7 @@
               var title = 'Invalid URL!';
               history.replaceState(null, title, publicPath);
               document.title = title;
-              document.body.innerHTML += ERROR_HTML;
+              document.errorMessage.style.display = 'initial';
             });
         }());
 
