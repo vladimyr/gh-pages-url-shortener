@@ -20,6 +20,11 @@
          */
         var GITHUB_REPO = 'nelsontky/gh-pages-url-shortener-db';
         var PUBLIC_PATH = '/';
+        var SCHEME_ALLOWLIST = [
+          'https:',
+          'http:',
+          'ftp:'
+        ];
 
         /**
          * DO NOT TOUCH ANYTHING BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -57,7 +62,7 @@
           if (url.hostname === location.hostname) {
             return false;
           }
-          return url.protocol === 'https:' || url.protocol === 'http:';
+          return SCHEME_ALLOWLIST.indexOf(url) !== -1;
         }
 
         function fetchIssue(issue) {
