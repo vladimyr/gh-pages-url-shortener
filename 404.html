@@ -10,42 +10,51 @@
         /**
          * Configuration goes here
          */
+        var ERROR_HTML = [
+          '<p>Short URL is invalid! (Or you have been spamming the site too much)</p>',
+          '<p>',
+          '  <a href="https://github.com/nelsontky/gh-pages-url-shortener">',
+          '    Learn more about this URL shortener',
+          '  </a>',
+          '</p>'
+        ].join('\n');
         var GITHUB_REPO = 'nelsontky/gh-pages-url-shortener-db';
-        var GITHUB_API_URL = 'https://api.github.com';
+        var PUBLIC_PATH = '/';
 
         /**
          * DO NOT TOUCH ANYTHING BELOW THIS COMMENT UNLESS YOU KNOW WHAT YOU ARE DOING
          */
+        var GITHUB_API_URL = 'https://api.github.com';
+
         (function redirect() {
-          var home;
-          var issue;
+          var publicPath = normalize(PUBLIC_PATH);
+          var pathname = location.pathname.replace(publicPath, '');
 
-          var match = location.pathname.match(/^\/([^/]+)(?:\/([^/]+))?/);
-
-          if (/\.github\.io$/.test(location.hostname)) {
-            home = match[1];
-            issue = match[2];
-          } else {
-            home = '';
-            issue = match[1];
-          }
-
-          fetchIssue(issue)
+          Promise.resolve(pathname.match(/^\/?([^/]+)/))
+            .then(function (match) {
+              var issue = match && parseInt(match[1], 10);
+              if (!isNaN(issue)) {
+                return fetchIssue(issue);
+              }
+              throw new Error('Invalid issue number');
+            })
             .then(function (payload) {
               var url = parseUrl(payload.title);
               if (url && isAllowed(url)) {
                 return location.replace(url);
               }
-              throw new Error('URL to redirect to is invalid!');
+              throw new Error('Invalid redirect URL');
             })
             .catch(function () {
-              var homepage = new URL(home, location.origin);
-              location.replace(homepage);
+              var title = 'Invalid URL!';
+              history.replaceState(null, title, publicPath);
+              document.title = title;
+              document.body.innerHTML += ERROR_HTML;
             });
         }());
 
         function isAllowed(url) {
-          if (url.host === location.host) {
+          if (url.hostname === location.hostname) {
             return false;
           }
           return url.protocol === 'https:' || url.protocol === 'http:';
@@ -59,10 +68,17 @@
             if (response.status === 200) {
               return response.json();
             }
-            throw new Error(
-              "An error occurred with the GitHub API. Maybe you've exceeded your API limits (60 per hour)"
-            );
+            var error = new Error(response.statusText);
+            error.response = response;
+            throw error;
           });
+        }
+
+        function normalize(path) {
+          path = path || '/';
+          return path
+            .replace(/\/+/g, '/')
+            .replace(/^\/?/, '/');
         }
 
         function parseUrl(url) {
