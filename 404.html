@@ -50,11 +50,12 @@
               }
               throw new Error('Invalid redirect URL');
             })
-            .catch(function () {
+            .catch(function (error) {
               var title = 'Invalid URL!';
               history.replaceState(null, title, publicPath);
               document.title = title;
               document.errorMessage.style.display = 'initial';
+              console.error(error);
             });
         }());
 
